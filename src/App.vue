@@ -1,10 +1,63 @@
+<template>
+  <div class="demo-app">
+    <div class="demo-app-sidebar">
+      <div class="demo-app-sidebar-section">
+        <h2>Instructions</h2>
+        <ul>
+          <li>Select dates and you will be prompted to create a new event</li>
+          <li>Drag, drop, and resize events</li>
+          <li>Click an event to delete it</li>
+        </ul>
+      </div>
+      <div class="demo-app-sidebar-section">
+        <div id="external-events">
+          <div id="external-events-listing">
+            <h4>Draggable Events</h4>
+            <div class="fc-event">My Event 1</div>
+            <div class="fc-event">My Event 2</div>
+            <div class="fc-event">My Event 3</div>
+            <div class="fc-event">My Event 4</div>
+            <div class="fc-event">My Event 5</div>
+          </div>
+          <p>
+            <input id="drop-remove"
+                   type="checkbox"
+                   checked="checked">
+            <label for="drop-remove">remove after drop</label>
+          </p>
+        </div>
+      </div>
+      <div class="demo-app-sidebar-section">
+        <h2>All Events ({{ currentEvents.length }})</h2>
+        <ul>
+          <li v-for="event in currentEvents"
+              :key="event.id"
+              class="fc-event">
+            <b>{{ event.startStr }}</b>
+            <i>{{ event.title }}</i>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="demo-app-main">
+      <FullCalendar class="demo-app-calendar"
+                    :options="calendarOptions">
+        <template #eventContent="arg">
+          <b>{{ arg.timeText }}</b>
+          <i>{{ arg.event.title }}</i>
+        </template>
+      </FullCalendar>
+    </div>
+  </div>
+</template>
+
 <script lang='ts' setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { CalendarOptions, EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from './event-utils'
 
 const calendarOptions = ref({
@@ -21,6 +74,14 @@ const calendarOptions = ref({
   initialView: 'dayGridMonth',
   initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
   editable: true,
+  droppable: true,
+  drop: function(arg: any) {
+    // is the "remove after drop" checkbox checked?
+    if ((document.getElementById('drop-remove') as HTMLInputElement)?.checked) {
+      // if so, remove the element from the "Draggable Events" list
+      arg.draggedEl.parentNode.removeChild(arg.draggedEl)
+    }
+  },
   selectable: true,
   selectMirror: true,
   dayMaxEvents: true,
@@ -66,48 +127,19 @@ function handleEventClick(clickInfo: EventClickArg) {
 function handleEvents(events: EventApi[]) {
   currentEvents.value = events
 }
-</script>
 
-<template>
-  <div class="demo-app">
-    <div class="demo-app-sidebar">
-      <div class="demo-app-sidebar-section">
-        <h2>Instructions</h2>
-        <ul>
-          <li>Select dates and you will be prompted to create a new event</li>
-          <li>Drag, drop, and resize events</li>
-          <li>Click an event to delete it</li>
-        </ul>
-      </div>
-      <div class="demo-app-sidebar-section">
-        <label>
-          <input type="checkbox"
-                 :checked="calendarOptions.weekends"
-                 @change="handleWeekendsToggle">
-          toggle weekends
-        </label>
-      </div>
-      <div class="demo-app-sidebar-section">
-        <h2>All Events ({{ currentEvents.length }})</h2>
-        <ul>
-          <li v-for="event in currentEvents" :key="event.id">
-            <b>{{ event.startStr }}</b>
-            <i>{{ event.title }}</i>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="demo-app-main">
-      <FullCalendar class="demo-app-calendar"
-                    :options="calendarOptions">
-        <template #eventContent="arg">
-          <b>{{ arg.timeText }}</b>
-          <i>{{ arg.event.title }}</i>
-        </template>
-      </FullCalendar>
-    </div>
-  </div>
-</template>
+onMounted(() => {
+  new Draggable(document.getElementById('external-events'), {
+    itemSelector: '.fc-event',
+    eventData: function(eventEl) {
+      return {
+        title: eventEl.innerText
+        // other properties here
+      }
+    }
+  })
+})
+</script>
 
 <style lang='css'>
 h2 {
