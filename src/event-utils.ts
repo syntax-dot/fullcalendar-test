@@ -1,7 +1,9 @@
 import { EventInput } from '@fullcalendar/core'
+import moment from 'moment'
 
 let eventGuid = 0
-let todayStr = new Date().toISOString().replace(/T.*$/, '') // YYYY-MM-DD of today
+const todayStr = new Date().toISOString().replace(/T.*$/, '') // YYYY-MM-DD of today
+const mock = moment().subtract(7, 'days').format('YYYY-MM-DD')
 
 export const INITIAL_EVENTS: EventInput[] = [
   {
@@ -12,7 +14,12 @@ export const INITIAL_EVENTS: EventInput[] = [
   {
     id: createEventId(),
     title: 'Timed event',
-    start: todayStr + 'T12:00:00'
+    start: todayStr
+  },
+  {
+    id: createEventId(),
+    title: 'Mock event',
+    start: mock
   }
 ]
 

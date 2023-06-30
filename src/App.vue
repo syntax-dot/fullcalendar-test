@@ -1,5 +1,5 @@
-<script lang='ts'>
-import { defineComponent } from 'vue'
+<script lang='ts' setup>
+import { ref } from 'vue'
 import { CalendarOptions, EventApi, DateSelectArg, EventClickArg } from '@fullcalendar/core'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -7,79 +7,71 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from './event-utils'
 
-export default defineComponent({
-  components: {
-    FullCalendar,
+const calendarOptions = ref({
+  plugins: [
+    dayGridPlugin,
+    timeGridPlugin,
+    interactionPlugin // needed for dateClick
+  ],
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay'
   },
-  data() {
-    return {
-      calendarOptions: {
-        plugins: [
-          dayGridPlugin,
-          timeGridPlugin,
-          interactionPlugin // needed for dateClick
-        ],
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        initialView: 'dayGridMonth',
-        initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
-        editable: true,
-        selectable: true,
-        selectMirror: true,
-        dayMaxEvents: true,
-        weekends: true,
-        select: this.handleDateSelect,
-        eventClick: this.handleEventClick,
-        eventsSet: this.handleEvents
-        /* you can update a remote database when these fire:
+  initialView: 'dayGridMonth',
+  initialEvents: INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
+  editable: true,
+  selectable: true,
+  selectMirror: true,
+  dayMaxEvents: true,
+  weekends: true,
+  select: handleDateSelect,
+  eventClick: handleEventClick,
+  eventsSet: handleEvents
+  /* you can update a remote database when these fire:
         eventAdd:
         eventChange:
         eventRemove:
         */
-      } as CalendarOptions,
-      currentEvents: [] as EventApi[],
-    }
-  },
-  methods: {
-    handleWeekendsToggle() {
-      this.calendarOptions.weekends = !this.calendarOptions.weekends // update a property
-    },
-    handleDateSelect(selectInfo: DateSelectArg) {
-      let title = prompt('Please enter a new title for your event')
-      let calendarApi = selectInfo.view.calendar
+}) as CalendarOptions
 
-      calendarApi.unselect() // clear date selection
+const currentEvents = ref<EventApi[]>([])
 
-      if (title) {
-        calendarApi.addEvent({
-          id: createEventId(),
-          title,
-          start: selectInfo.startStr,
-          end: selectInfo.endStr,
-          allDay: selectInfo.allDay
-        })
-      }
-    },
-    handleEventClick(clickInfo: EventClickArg) {
-      if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-        clickInfo.event.remove()
-      }
-    },
-    handleEvents(events: EventApi[]) {
-      this.currentEvents = events
-    },
+function handleWeekendsToggle() {
+  calendarOptions.weekends = !calendarOptions.weekends // update a property
+}
+
+function handleDateSelect(selectInfo: DateSelectArg) {
+  const title = prompt('Please enter a new title for your event')
+  const calendarApi = selectInfo.view.calendar
+
+  calendarApi.unselect() // clear date selection
+
+  if (title) {
+    calendarApi.addEvent({
+      id: createEventId(),
+      title,
+      start: selectInfo.startStr,
+      end: selectInfo.endStr,
+      allDay: selectInfo.allDay
+    })
   }
-})
+}
 
+function handleEventClick(clickInfo: EventClickArg) {
+  if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`))
+    clickInfo.event.remove()
+}
+
+function handleEvents(events: EventApi[]) {
+  currentEvents.value = events
+}
 </script>
 
 <template>
-  <div class='demo-app'>
-    <div class='demo-app-sidebar'>
-      <div class='demo-app-sidebar-section'>
+  <div class="demo-app">
+    <div class="demo-app-sidebar">
+      <div class="demo-app-sidebar-section">
         <h2>Instructions</h2>
         <ul>
           <li>Select dates and you will be prompted to create a new event</li>
@@ -87,32 +79,28 @@ export default defineComponent({
           <li>Click an event to delete it</li>
         </ul>
       </div>
-      <div class='demo-app-sidebar-section'>
+      <div class="demo-app-sidebar-section">
         <label>
-          <input
-            type='checkbox'
-            :checked='calendarOptions.weekends'
-            @change='handleWeekendsToggle'
-          />
+          <input type="checkbox"
+                 :checked="calendarOptions.weekends"
+                 @change="handleWeekendsToggle">
           toggle weekends
         </label>
       </div>
-      <div class='demo-app-sidebar-section'>
+      <div class="demo-app-sidebar-section">
         <h2>All Events ({{ currentEvents.length }})</h2>
         <ul>
-          <li v-for='event in currentEvents' :key='event.id'>
+          <li v-for="event in currentEvents" :key="event.id">
             <b>{{ event.startStr }}</b>
             <i>{{ event.title }}</i>
           </li>
         </ul>
       </div>
     </div>
-    <div class='demo-app-main'>
-      <FullCalendar
-        class='demo-app-calendar'
-        :options='calendarOptions'
-      >
-        <template v-slot:eventContent='arg'>
+    <div class="demo-app-main">
+      <FullCalendar class="demo-app-calendar"
+                    :options="calendarOptions">
+        <template #eventContent="arg">
           <b>{{ arg.timeText }}</b>
           <i>{{ arg.event.title }}</i>
         </template>
@@ -122,7 +110,6 @@ export default defineComponent({
 </template>
 
 <style lang='css'>
-
 h2 {
   margin: 0;
   font-size: 16px;
@@ -169,5 +156,4 @@ b { /* used for event dates/times */
   max-width: 1100px;
   margin: 0 auto;
 }
-
 </style>
