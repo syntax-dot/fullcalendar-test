@@ -129,9 +129,13 @@ function handleEvents(events: EventApi[]) {
 }
 
 onMounted(() => {
-  new Draggable(document.getElementById('external-events'), {
+  const element = document.getElementById('external-events')
+  if (!element)
+    return
+  // eslint-disable-next-line no-new
+  new Draggable(element, {
     itemSelector: '.fc-event',
-    eventData: function(eventEl) {
+    eventData: function(eventEl: HTMLElement) {
       return {
         title: eventEl.innerText
         // other properties here
