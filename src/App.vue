@@ -1,23 +1,23 @@
 <template>
   <div class="demo-app">
     <div class="demo-app-sidebar">
-      <div class="demo-app-sidebar-section">
+      <!-- <div class="demo-app-sidebar-section">
         <h2>Instructions</h2>
         <ul>
           <li>Select dates and you will be prompted to create a new event</li>
           <li>Drag, drop, and resize events</li>
           <li>Click an event to delete it</li>
         </ul>
-      </div>
+      </div> -->
       <div class="demo-app-sidebar-section">
         <div id="external-events">
-          <div id="external-events-listing">
+          <div id="external-events-listing" class="drag-wrapper">
             <h4>Draggable Events</h4>
-            <div class="fc-event">My Event 1</div>
-            <div class="fc-event">My Event 2</div>
-            <div class="fc-event">My Event 3</div>
-            <div class="fc-event">My Event 4</div>
-            <div class="fc-event">My Event 5</div>
+            <div v-for="event in mockDragEvents"
+                 :key="event.id"
+                 v-text="event.name"
+                 :style="{ backgroundColor: event.color }"
+                 class="fc-event fc-event-drag" />
           </div>
           <p>
             <input id="drop-remove"
@@ -31,8 +31,7 @@
         <h2>All Events ({{ currentEvents.length }})</h2>
         <ul>
           <li v-for="event in currentEvents"
-              :key="event.id"
-              class="fc-event">
+              :key="event.id">
             <b>{{ event.startStr }}</b>
             <i>{{ event.title }}</i>
           </li>
@@ -59,6 +58,14 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from './event-utils'
+
+const mockDragEvents = [
+  { name: 'Event 1', value: '1', id: '1', color: 'red' },
+  { name: 'Event 2', value: '2', id: '2', color: 'blue' },
+  { name: 'Event 3', value: '3', id: '3', color: 'green' },
+  { name: 'Event 4', value: '4', id: '4', color: 'orange' },
+  { name: 'Event 5', value: '5', id: '5', color: 'blueviolet' }
+]
 
 const calendarOptions = ref({
   plugins: [
@@ -191,5 +198,19 @@ b { /* used for event dates/times */
 .fc { /* the calendar root */
   max-width: 1100px;
   margin: 0 auto;
+}
+
+.drag-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fc-event {
+  padding: 8px;
+}
+
+.fc-event-drag {
+  border-radius: 8px;
 }
 </style>
